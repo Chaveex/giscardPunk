@@ -398,7 +398,7 @@ ART.cafe = function (c, F) {
   R(c, 91, 54, 14, 4, '#3a2a1a'); // cheveux
   R(c, 94, 61, 2, 2, '#2a2018'); R(c, 100, 61, 2, 2, '#2a2018');
   R(c, 93, 65, 10, 3, '#4a3424'); // moustache
-  R(c, 84, 70, 5, 22, '#e8e4d8'); R(c, 107, 70, 5, 22, '#e8e4d8'); // bras
+  R(c, 84, 70, 5, 22, '#e8e4d8'); // bras gauche (le droit est animé dans cafeDyn)
 
   // Juke-Tel 3000
   R(c, 246, 70, 56, 74, '#c8bc98');
@@ -491,6 +491,13 @@ ART.cafeDyn = function (c, t, F) {
   }
   // vapeur du percolateur
   if (Math.sin(t * 2) > 0) R(c, 34 + Math.sin(t * 5) * 2, 70 - (t * 8 % 8), 2, 2, 'rgba(220,220,220,0.5)');
+  // patron : bras droit qui essuie le zinc, pause 7s entre les va-et-vient
+  const wcyc = t % (Math.PI + 7);
+  const wx = wcyc < Math.PI ? 96 + Math.cos(wcyc * 2) * 9 : 105;
+  R(c, wx, 70, 5, 32, '#e8e4d8');
+  R(c, wx - 1, 100, 8, 4, '#d8d0c0'); // chiffon
+  // clignement d'yeux
+  if (Math.sin(t * 1.3) > 0.97) { R(c, 94, 61, 2, 2, '#d8a878'); R(c, 100, 61, 2, 2, '#d8a878'); }
 };
 
 // ---------- CENTRE SERVEUR (EXTÉRIEUR) ----------
