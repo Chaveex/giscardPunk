@@ -36,6 +36,7 @@ const storage = {};
 const sandbox = {
   console,
   Math, JSON, Date, Proxy, Promise,
+  setInterval: () => 0, clearInterval: () => {},
   localStorage: {
     getItem: k => (k in storage ? storage[k] : null),
     setItem: (k, v) => { storage[k] = String(v); },
@@ -66,7 +67,6 @@ const run = (code) => vm.runInContext(code, sandbox);
 const click = (x, y, button) => {
   for (const fn of listeners.mousedown || []) fn({ clientX: x, clientY: y, button: button || 0, preventDefault: () => {} });
 };
-const frame = (n) => { for (let i = 0; i < (n || 1); i++) run('frame(performance)'); };
 run('var performance = 16;'); // ms factice
 
 let failures = 0;
@@ -86,7 +86,7 @@ for (let i = 0; i < 12; i++) { run('if(GAME.cut) GAME.cut.chars = 9999'); click(
 check('intro finie → appartement', run('GAME.mode') === 'play' && run('GAME.scene.id') === 'apt');
 
 // peindre toutes les scènes + dynamiques (chasse aux ReferenceError)
-for (const id of ['apt', 'rue', 'cafe', 'centrale_ext', 'centrale_int', 'eiffel']) {
+for (const id of ['apt', 'rue', 'cafe', 'centrale_ext', 'centrale_int', 'archives', 'cave', 'eiffel']) {
   run(`SCENES['${id}'].paint(GAME.bg.getContext('2d'), GAME.flags)`);
   run(`if(SCENES['${id}'].dynamic) SCENES['${id}'].dynamic(cx, 1.23, GAME.flags)`);
   check('peinture ' + id, true);
@@ -106,29 +106,74 @@ check('tournevis + carte', run("E.has('tournevis') && E.has('carte')"));
 run("SCENES.apt.hotspots.find(h=>h.name==='Porte').use()");
 check('sortie appartement → rue', run('GAME.scene.id') === 'rue');
 
+// le tournevis ouvre le juke mais ne suffit plus
 run("SCENES.cafe.hotspots.find(h=>h.name==='Juke-Tel 3000').onItem('tournevis')"); dlgFlush();
-check('juke réparé + galette', run('GAME.flags.jukeRepare === true') && run("E.has('galette')"));
+check('juke ouvert, pas réparé', run('GAME.flags.jukeOuvert === true && GAME.flags.jukeRepare !== true'));
 
+// fusible réquisitionné sur la borne publique
+run("SCENES.rue.hotspots.find(h=>h.name==='Borne Minitel').onItem('tournevis')"); dlgFlush();
+check('fusible pris', run("E.has('fusible') && GAME.flags.fusiblePris === true"));
+
+// fusible dans le juke → réparé → galette
+run("SCENES.cafe.hotspots.find(h=>h.name==='Juke-Tel 3000').onItem('fusible')"); dlgFlush();
+check('juke réparé + galette', run("GAME.flags.jukeRepare === true && E.has('galette') && !E.has('fusible')"));
+
+// Edmond : galette → badge rouillé + indices
 run("SCENES.rue.hotspots.find(h=>h.name==='Edmond').onItem('galette')"); dlgFlush();
-check('badge + code', run("E.has('badge') && GAME.flags.codeConnu === true"));
+check('badge + indice code', run("E.has('badge') && GAME.flags.codeConnu === true"));
 
+// le CRS-bot refuse le badge rouillé
 run("SCENES.centrale_ext.hotspots.find(h=>h.name==='CRS-bot' && h.cond(GAME.flags)).onItem('badge')"); dlgFlush();
+check('badge rouillé refusé', run('GAME.flags.gardeOk !== true') && run("E.has('badge')"));
+
+// décapage vapeur au percolateur
+run("SCENES.cafe.hotspots.find(h=>h.name==='Percolateur').onItem('badge')"); dlgFlush();
+check('badge décapé', run("E.has('badgeok') && !E.has('badge')"));
+
+// le bot accepte le badge rutilant
+run("SCENES.centrale_ext.hotspots.find(h=>h.name==='CRS-bot' && h.cond(GAME.flags)).onItem('badgeok')"); dlgFlush();
 check('garde validé', run('GAME.flags.gardeOk') === true);
 
+// terminal : 997 est un piège, 1984 ouvre les archives
 run('GAME.scene = SCENES.centrale_int');
 run("SCENES.centrale_int.hotspots.find(h=>h.name==='Terminal central').use()"); dlgFlush();
 check('keypad ouvert', run('!!GAME.keypad'));
 run("GAME.keypad.val='997'; validateKeypad()"); dlgFlush();
+check('997 refusé (easter egg)', run('GAME.flags.archOpen !== true'));
+run("SCENES.centrale_int.hotspots.find(h=>h.name==='Terminal central').use()"); dlgFlush();
+run("GAME.keypad.val='1984'; validateKeypad()"); dlgFlush();
+check('1984 → archives déverrouillées', run('GAME.flags.archOpen') === true);
+
+// archives : le coffre rend la disquette + alarme
+run("SCENES.centrale_int.hotspots.find(h=>h.name==='Porte des Archives').use()");
+check('entrée aux archives', run('GAME.scene.id') === 'archives');
+run("SCENES.archives.hotspots.find(h=>h.name==='Coffre-lecteur').use()"); dlgFlush();
 check('disquette + alarme', run("E.has('disquette') && GAME.flags.alarme === true"));
 
+// retour au café : M. invite à la cave
+run("E.goto('cafe', 290, 154)"); dlgFlush();
+check('invitation à la cave', run('GAME.flags.msgCave') === true);
+run("SCENES.cafe.hotspots.find(h=>h.name==='Trappe de cave').use()");
+check('descente à la cave', run('GAME.scene.id') === 'cave');
+
+// Marianne : clé de diffusion + jeton
+run("SCENES.cave.hotspots.find(h=>h.name==='Marianne').use()"); dlgFlush();
+check('clé + jeton', run("E.has('cle') && E.has('jeton') && GAME.flags.cleDonnee === true"));
+
+// aérotrain (consomme le jeton)
 run('GAME.scene = SCENES.rue');
 run("SCENES.rue.hotspots.find(h=>h.name==='Gare Aérotrain').use()");
 run('if(GAME.cut) GAME.cut.chars=9999'); click(160, 100);
-check('arrivée tour eiffel', run('GAME.scene.id') === 'eiffel');
+check('arrivée tour eiffel', run('GAME.scene.id') === 'eiffel' && run("!E.has('jeton')"));
 
+// pupitre : verrouillé sans clé, puis fin
+run("SCENES.eiffel.hotspots.find(h=>h.name==='Pupitre émetteur').onItem('disquette')");
+check('pupitre verrouillé sans clé', run("GAME.mode === 'play' && E.has('disquette')"));
+run("SCENES.eiffel.hotspots.find(h=>h.name==='Pupitre émetteur').onItem('cle')"); dlgFlush();
+check('émetteur déverrouillé', run("GAME.flags.emetteurPret === true && !E.has('cle')"));
 run("SCENES.eiffel.hotspots.find(h=>h.name==='Pupitre émetteur').onItem('disquette')"); dlgFlush();
 check('fin déclenchée', run("GAME.mode") === 'ending');
-for (let i = 0; i < 10; i++) { run('if(GAME.cut) GAME.cut.chars=9999'); click(160, 100); }
+for (let i = 0; i < 12; i++) { run('if(GAME.cut) GAME.cut.chars=9999'); click(160, 100); }
 check('retour au titre', run('GAME.mode') === 'title');
 
 // sauvegarde / chargement

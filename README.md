@@ -35,8 +35,12 @@ Aucune dépendance, aucun build. Deux options :
 
 - HTML5 Canvas, JavaScript vanilla, zéro asset externe : décors, sprites et icônes
   sont peints au code (palette nuit : béton, verre fumé, néon, vert Minitel).
-- Résolution native 320×200 upscalée en `image-rendering: pixelated`, scanlines CSS.
-- Son : mini-synthé WebAudio (bips Minitel, modem, arpège façon Oxygène).
+- Grille de jeu 320×200, canvas interne sur-échantillonné ×5 (1600×1000) : le pixel
+  art garde ses gros pixels, le texte est rasterisé net. Scanlines CSS.
+- Musique : séquenceur chiptune WebAudio, 3 pistes en Ré mineur calculées au code —
+  thème titre (cadence andalouse, basse en octaves, batterie bruit blanc, écho),
+  nappe d'exploration, piste d'alerte phrygienne. Toggle au titre et au menu.
+- Bruitages : mini-synthé (bips Minitel, modem, alarme).
 
 ## Test
 
@@ -44,18 +48,23 @@ Aucune dépendance, aucun build. Deux options :
 node test/smoke.js
 ```
 
-Déroule l'intro, peint les 6 scènes, joue la chaîne de puzzles complète jusqu'à la fin
-et vérifie la sauvegarde/chargement.
+Déroule l'intro, peint les 8 scènes, joue la chaîne de puzzles complète jusqu'à la fin
+(y compris les impasses : badge rouillé refusé, code 997 piégé) et vérifie la
+sauvegarde/chargement.
+
+`node test/tour.js` (optionnel, Edge + playwright-core) capture chaque scène dans
+`test/shots/` et vérifie que la musique démarre.
 
 ## Structure
 
 ```
 index.html        coquille + canvas
-style.css         cadrage, pixelated, scanlines
-js/audio.js       synthé WebAudio
+style.css         cadrage, scanlines
+js/audio.js       bruitages + séquenceur chiptune (3 pistes)
 js/sprites.js     héros (4 frames de marche), icônes d'inventaire, fiches objets
-js/art.js         peintres des 6 décors + animations (flammes, LED, néons...)
+js/art.js         peintres des 8 décors + animations (flammes, LED, néons...)
 js/game.js        scénario : scènes, hotspots, dialogues, puzzles
 js/engine.js      moteur : marche perspective, inventaire, dialogues, keypad, menu, saves
 test/smoke.js     test de fumée headless
+test/tour.js      tour visuel (captures de toutes les scènes)
 ```

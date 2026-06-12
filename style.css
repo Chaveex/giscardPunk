@@ -16,10 +16,10 @@ html, body {
 }
 
 #screen {
+  /* Le canvas interne est déjà sur-échantillonné (1600x1000) : on laisse le
+     navigateur lisser le dernier ajustement pour garder le texte net. */
   width: 100%;
   height: 100%;
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
   cursor: none;
   background: #000;
   border: 2px solid #1a1428;

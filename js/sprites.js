@@ -146,6 +146,30 @@ const ICONS = {
     c.fillStyle = '#d8c040'; c.fillRect(x + 7, y + 4, 2, 2);
     c.fillStyle = '#705820'; c.fillRect(x + 11, y + 11, 3, 2); // rouille
   },
+  badgeok(c, x, y) {
+    c.fillStyle = '#3060b8'; c.beginPath(); c.arc(x + 8, y + 8, 6, 0, 7); c.fill();
+    c.fillStyle = '#b8d0f8'; c.fillRect(x + 5, y + 7, 6, 2);
+    c.fillStyle = '#f8e060'; c.fillRect(x + 7, y + 4, 2, 2);
+    c.fillStyle = '#ffffff'; c.fillRect(x + 11, y + 4, 2, 1); c.fillRect(x + 12, y + 3, 1, 2); // éclat
+  },
+  fusible(c, x, y) {
+    c.fillStyle = '#d8d8e0'; c.fillRect(x + 2, y + 6, 3, 4);   // capuchon gauche
+    c.fillStyle = '#d8d8e0'; c.fillRect(x + 11, y + 6, 3, 4);  // capuchon droit
+    c.fillStyle = '#e8d8b0'; c.fillRect(x + 5, y + 5, 6, 6);   // corps de verre
+    c.fillStyle = '#a06820'; c.fillRect(x + 5, y + 7, 6, 1);   // filament
+  },
+  jeton(c, x, y) {
+    c.fillStyle = '#c8a030'; c.beginPath(); c.arc(x + 8, y + 8, 6, 0, 7); c.fill();
+    c.fillStyle = '#5a4610'; c.fillRect(x + 6, y + 6, 4, 4);   // trou carré
+    c.fillStyle = '#e8c860'; c.fillRect(x + 4, y + 4, 2, 1);   // reflet
+  },
+  cle(c, x, y) {
+    c.fillStyle = '#6a2a8a'; c.fillRect(x + 1, y + 5, 6, 6);   // tête pourpre
+    c.fillStyle = '#1a0a26'; c.fillRect(x + 3, y + 7, 2, 2);
+    c.fillStyle = '#b8c0c8'; c.fillRect(x + 7, y + 7, 8, 2);   // tige
+    c.fillStyle = '#b8c0c8'; c.fillRect(x + 12, y + 9, 2, 3);  // dents
+    c.fillStyle = '#b8c0c8'; c.fillRect(x + 9, y + 9, 2, 2);
+  },
   disquette(c, x, y) {
     c.fillStyle = '#6a2a8a'; c.fillRect(x + 2, y + 2, 12, 12);
     c.fillStyle = '#c0b8d0'; c.fillRect(x + 5, y + 3, 6, 4);
@@ -157,7 +181,11 @@ const ICONS = {
 const ITEMS = {
   tournevis: { name: 'Tournevis', look: "Cruciforme, agréé. L'arme blanche du technicien Télétel." },
   carte:     { name: "Carte d'agent", look: "CARTE D'AGENT TÉLÉTEL — PELLETIER J. — CLASSE 3. Valide jusqu'en 1994." },
+  fusible:   { name: 'Fusible 8A', look: 'Fusible 8 ampères, réquisitionné sur le mobilier urbain. La République me le pardonnera.' },
   galette:   { name: 'Galette-saucisse', look: "Une galette-saucisse de contrebande. Elle sent la Bretagne d'avant. Et légèrement le césium." },
-  badge:     { name: 'Badge CRS-bot', look: "Badge CRS-bot n°22-455. Rayé, rouillé, parfait." },
+  badge:     { name: 'Badge CRS-bot', look: "Badge CRS-bot n°22-455. Rayé, rouillé. Trop rouillé pour un portier maniaque." },
+  badgeok:   { name: 'Badge décapé', look: 'Badge CRS-bot n°22-455, décapé à la vapeur. On se voit dedans. Un peu trop.' },
+  jeton:     { name: "Jeton d'aérotrain", look: '« RÉSERVÉ DIRECTION ». La direction, ce soir, c’est moi.' },
+  cle:       { name: 'Clé de diffusion', look: 'Forgée dans un barreau de Cayenne, dit Marianne. Elle ouvre la voix de la France.' },
   disquette: { name: 'Disquette pourpre', look: "LA disquette. Étiquette : « V.G.E. — AUTOPSIE — 12/03/1984 — NE PAS DIFFUSER »." }
 };

@@ -2,8 +2,13 @@
 // Moteur point'n'click 320x200 — clic gauche : agir, clic droit : examiner, Échap : menu.
 
 const W = 320, H = 200, VH = 176;
+// Sur-échantillonnage : la grille de jeu reste 320x200 (gros pixels), mais le canvas
+// interne est 5x plus grand pour que le texte soit rasterisé net.
+const SCALE = 5;
 const cv = document.getElementById('screen');
+cv.width = W * SCALE; cv.height = H * SCALE;
 const cx = cv.getContext('2d');
+cx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
 cx.imageSmoothingEnabled = false;
 
 const SAVE_PREFIX = 'gpunk_slot_';
@@ -29,7 +34,7 @@ const GAME = {
   menuRects: [],
   keypadRects: []
 };
-GAME.bg.width = W; GAME.bg.height = VH;
+GAME.bg.width = W * SCALE; GAME.bg.height = VH * SCALE;
 
 // ---------- API exposée aux scènes ----------
 const E = {
@@ -46,13 +51,12 @@ const E = {
   dialog(lines, cb) { GAME.dialog = { lines, i: 0, cb }; AudioSys.blip(620, 0.05); },
   goto(id, x, y) { loadScene(id, x, y, true); },
   repaint() { paintBG(); },
-  keypad(cb) { GAME.keypad = { val: '', cb }; AudioSys.blip(880, 0.05); },
+  keypad(cb, title) { GAME.keypad = { val: '', cb, title: title || 'CODE DIRECTEUR' }; AudioSys.blip(880, 0.05); },
   cutscene(pages, cb) {
     GAME.cut = { pages: normPages(pages), i: 0, chars: 0, cb };
     GAME.mode = 'cut';
   },
   endGame() {
-    AudioSys.jingle();
     GAME.cut = { pages: normPages(END_PAGES), i: 0, chars: 0, cb: () => { GAME.mode = 'title'; GAME.scene = null; } };
     GAME.mode = 'ending';
   },
@@ -67,6 +71,7 @@ function normPages(pages) {
 function paintBG() {
   if (!GAME.scene) return;
   const g = GAME.bg.getContext('2d');
+  g.setTransform(SCALE, 0, 0, SCALE, 0, 0);
   g.clearRect(0, 0, W, VH);
   GAME.scene.paint(g, GAME.flags);
 }
@@ -79,6 +84,7 @@ function loadScene(id, x, y, autosave) {
   GAME.say = null;
   GAME.hover = null;
   paintBG();
+  if (GAME.scene.enter) GAME.scene.enter();
   if (autosave && GAME.mode === 'play') saveSlot(AUTOSLOT);
 }
 
@@ -320,7 +326,7 @@ function clickTitle(m) {
       AudioSys.click();
       if (r.k === 'new') { AudioSys.modem(); newGame(); }
       if (r.k === 'continue') { if (!loadSlot(AUTOSLOT)) AudioSys.err(); }
-      if (r.k === 'music') AudioSys.jingle();
+      if (r.k === 'music') Music.toggle();
     }
   }
 }
@@ -330,7 +336,8 @@ function clickMenu(m) {
     if (m.x >= r.x && m.x < r.x + r.w && m.y >= r.y && m.y < r.y + r.h) {
       AudioSys.click();
       if (r.k === 'resume') GAME.menu = false;
-      else if (r.k === 'sound') { AudioSys.on = !AudioSys.on; }
+      else if (r.k === 'sound') AudioSys.toggle();
+      else if (r.k === 'music') Music.toggle();
       else if (r.k === 'quit') { GAME.menu = false; GAME.mode = 'title'; GAME.scene = null; }
       else if (r.k.startsWith('save')) { saveSlot(+r.k.slice(4)); AudioSys.ok(); }
       else if (r.k.startsWith('load')) { if (!loadSlot(+r.k.slice(4))) AudioSys.err(); }
@@ -440,7 +447,7 @@ function drawKeypad() {
   const px = 110, py = 24, pw = 100, ph = 132;
   cx.fillStyle = '#1a2620'; cx.fillRect(px, py, pw, ph);
   cx.strokeStyle = '#40e870'; cx.strokeRect(px + 0.5, py + 0.5, pw - 1, ph - 1);
-  outlinedText(cx, 'CODE DIRECTEUR', 160, py + 6, '#50f888', 8, 'center');
+  outlinedText(cx, GAME.keypad.title, 160, py + 6, '#50f888', 8, 'center');
   // affichage
   cx.fillStyle = '#06120a'; cx.fillRect(px + 14, py + 18, pw - 28, 14);
   outlinedText(cx, GAME.keypad.val.replace(/./g, '#') || '_', 160, py + 21, '#50f888', 9, 'center');
@@ -466,11 +473,12 @@ function drawMenu() {
     if (info) { cx.fillStyle = '#7a7298'; cx.fillText(info, 150, y + 4); }
     GAME.menuRects.push({ x: 60, y, w: 200, h: 15, k });
   };
-  row(32, 'resume', 'REPRENDRE');
-  row(50, 'sound', 'SON : ' + (AudioSys.on ? 'OUI' : 'NON'));
+  row(30, 'resume', 'REPRENDRE');
+  row(48, 'sound', 'SON : ' + (AudioSys.on ? 'OUI' : 'NON'));
+  row(66, 'music', 'MUSIQUE : ' + (Music.on ? 'OUI' : 'NON'));
   for (let i = 1; i <= 3; i++) {
     const inf = slotInfo(i);
-    const y = 50 + i * 18;
+    const y = 66 + i * 18;
     // deux boutons par ligne : sauver / charger
     cx.fillStyle = '#1a1726'; cx.fillRect(60, y, 96, 15);
     cx.fillStyle = '#1a1726'; cx.fillRect(164, y, 96, 15);
@@ -481,9 +489,8 @@ function drawMenu() {
     GAME.menuRects.push({ x: 60, y, w: 96, h: 15, k: 'save' + i });
     GAME.menuRects.push({ x: 164, y, w: 96, h: 15, k: 'load' + i });
   }
-  row(122, 'quit', 'QUITTER (TITRE)');
-  outlinedText(cx, 'Sauvegarde auto à chaque changement de lieu', 160, 144, '#6a6288', 7, 'center');
-  outlinedText(cx, 'Échap pour reprendre', 160, 156, '#6a6288', 7, 'center');
+  row(138, 'quit', 'QUITTER (TITRE)');
+  outlinedText(cx, 'Sauvegarde auto à chaque changement de lieu — Échap pour reprendre', 160, 158, '#6a6288', 7, 'center');
 }
 
 function drawCut(t) {
@@ -518,17 +525,23 @@ function drawTitle(t) {
   };
   btn(146, 'new', 'NOUVELLE PARTIE');
   btn(164, 'continue', hasAuto ? 'CONTINUER' : 'CONTINUER (aucune sauvegarde)', !hasAuto);
-  btn(182, 'music', '♪ OXYGÈNE');
+  btn(182, 'music', '♪ MUSIQUE : ' + (Music.on ? 'OUI' : 'NON'));
   outlinedText(cx, 'Clic gauche : agir — Clic droit : examiner — Échap : menu', 160, 4, '#7868a0', 7, 'center');
 }
 
 // ---------- Boucle ----------
+function musicWanted() {
+  if (GAME.mode === 'title' || GAME.mode === 'ending') return 'theme';
+  return GAME.flags.alarme ? 'chase' : 'streets';
+}
+
 let lastT = 0;
 function frame(ms) {
   const t = ms / 1000;
   const dt = Math.min(0.05, t - lastT);
   lastT = t;
 
+  Music.ensure(musicWanted());
   cx.clearRect(0, 0, W, H);
 
   if (GAME.mode === 'title') {
@@ -538,7 +551,7 @@ function frame(ms) {
   } else if (GAME.mode === 'play' && GAME.scene) {
     if (!GAME.menu && !GAME.keypad && !GAME.dialog) updatePlayer(dt);
 
-    cx.drawImage(GAME.bg, 0, 0);
+    cx.drawImage(GAME.bg, 0, 0, W, VH);
     if (GAME.scene.dynamic) GAME.scene.dynamic(cx, t, GAME.flags);
     drawPlayer();
 
