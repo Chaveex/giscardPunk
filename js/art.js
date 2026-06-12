@@ -315,8 +315,13 @@ ART.rueDyn = function (c, t, F) {
   R(c, 102, 119, 2, 3, '#e85020');
   // phares sur l'autoroute
   const cx1 = (t * 90) % 400 - 40, cx2 = 360 - (t * 70) % 400;
-  R(c, cx1, 65, 6, 2, '#f8e8a0'); R(c, cx1 + 8, 65, 4, 2, '#f8e8a0');
-  R(c, cx2, 69, 6, 2, '#f84040');
+  // tronçon visible de l'autoroute : masqué par l'immeuble (0-70) et le café (276-320)
+  const road = (x, y, w, h, col) => {
+    const x1 = Math.max(x, 70), x2 = Math.min(x + w, 276);
+    if (x2 > x1) R(c, x1, y, x2 - x1, h, col);
+  };
+  road(cx1, 65, 6, 2, '#f8e8a0'); road(cx1 + 8, 65, 4, 2, '#f8e8a0');
+  road(cx2, 69, 6, 2, '#f84040');
   // néon Volcan qui clignote
   if (Math.sin(t * 3.7) > -0.6) txt(c, 'LE VOLCAN', 298, 65, '#ff7050', 7, 'center');
   // reflets de néon dans les flaques
@@ -325,10 +330,24 @@ ART.rueDyn = function (c, t, F) {
   R(c, 138, 133, 5, 1, 'rgba(200,160,48,' + (0.2 + 0.2 * Math.sin(t * 2)) + ')');
   // caméra : LED et balayage
   if (Math.sin(t * 2.2) > 0) R(c, 6, 80, 2, 2, '#f83030');
-  // feu du baril d'Edmond / dirigeable
+  // dirigeable
   const bx = ((t * 5) % 420) - 50;
-  R(c, bx, 16, 36, 10, '#484058');
-  txt(c, 'RADIO V.G.E.', bx + 3, 18, '#c8b860', 6);
+  const by = 19;
+  // dérive arrière
+  c.fillStyle = '#342c40';
+  c.beginPath();
+  c.moveTo(bx + 6, by - 7); c.lineTo(bx - 6, by - 10);
+  c.lineTo(bx - 6, by + 10); c.lineTo(bx + 6, by + 7);
+  c.closePath(); c.fill();
+  // enveloppe
+  c.fillStyle = '#484058';
+  c.beginPath(); c.ellipse(bx + 18, by, 18, 6, 0, 0, 7); c.fill();
+  c.fillStyle = '#585068';
+  c.beginPath(); c.ellipse(bx + 17, by - 1.5, 14, 3.5, 0, 0, 7); c.fill();
+  // nacelle suspendue
+  R(c, bx + 11, by + 5, 11, 3, '#302a3c');
+  R(c, bx + 14, by + 6, 2, 1, '#e8c040'); // hublot éclairé
+  txt(c, 'RADIO V.G.E.', bx + 17, by - 3, '#c8b860', 4, 'center');
   if (F.alarme && Math.sin(t * 6) > 0) {
     txt(c, 'AÉROTRAIN', 222, 89, '#c0ffd0', 7, 'center');
   }
