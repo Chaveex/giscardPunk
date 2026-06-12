@@ -118,7 +118,7 @@ function buildPlayerSprites() {
 }
 
 const PLAYER_SPRITES = buildPlayerSprites();
-const PLAYER_W = 12, PLAYER_H = 30;
+const PLAYER_W = 18, PLAYER_H = 45;
 
 // ---- Icônes d'inventaire (16x16, dessinées à la volée) ----
 const ICONS = {
