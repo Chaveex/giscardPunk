@@ -398,7 +398,7 @@ const SCENES = {
       },
       {
         name: 'Ardoise', rect: [186, 22, 76, 52], walk: [200, 150],
-        look: '« NE PAS ÉVOQUER 2009. » Sage maison.'
+        look: '« NE PAS ÉVOQUER 1982. » Sage maison.'
       },
       {
         name: 'Comptoir', rect: [16, 100, 196, 14], walk: [110, 150],
@@ -516,9 +516,9 @@ const SCENES = {
               } else if (val === '997' || val === '0997') {
                 E.sfx.err();
                 E.say2(ANCH.console, C_MT, 'FLATTERIE DÉTECTÉE. LE SCORE N’EST PAS UNE ANNÉE, CITOYEN.');
-              } else if (val === '2009') {
+              } else if (val === '1982') {
                 E.sfx.err();
-                E.say2(ANCH.console, C_MT, 'ANNÉE INEXISTANTE. CONSULTEZ L’ARDOISE DU VOLCAN.');
+                E.say2(ANCH.console, C_MT, 'ANNÉE CENSURÉE. CONSULTEZ L’ARDOISE DU VOLCAN.');
               } else if (val === '1981') {
                 E.sfx.err();
                 E.say2(ANCH.console, C_MT, 'PRESQUE. MAUVAIS DEUIL.');
@@ -724,7 +724,7 @@ const SCENES = {
           if (id !== 'disquette') return false;
           if (!F.emetteurPret) { E.say('La fente est verrouillée. La clé de Marianne, d’abord.'); return true; }
           E.dialog([
-            { t: 'Pour Rennes. Pour 2009, l’année volée. Pour l’autre 1981.', c: C_J },
+            { t: 'Pour Rennes. Pour 1982, l’année volée. Pour l’autre 1981.', c: C_J },
             { t: '*CLIC*', c: C_NA }
           ], () => { E.take('disquette'); E.endGame(); });
           return true;

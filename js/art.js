@@ -379,7 +379,7 @@ ART.cafe = function (c, F) {
   txt(c, 'GALETTE DE RENNES 30F', 190, 28, '#d8d8c8', 6);
   txt(c, 'VIN CHAUD ATOMIQUE 5F', 190, 40, '#d8d8c8', 6);
   txt(c, 'CAFÉ (RATIONNÉ)   2F', 190, 52, '#d8d8c8', 6);
-  txt(c, 'NE PAS ÉVOQUER 2009', 190, 64, '#a85050', 6);
+  txt(c, 'NE PAS ÉVOQUER 1982', 190, 64, '#a85050', 6);
 
   // comptoir zinc
   R(c, 16, 104, 196, 8, '#a8b0b8');
