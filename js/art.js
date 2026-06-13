@@ -566,6 +566,24 @@ ART.centrale_ext = function (c, F) {
   R(c, 0, 140, 320, 36, '#52525c');
   c.fillStyle = '#46464e';
   for (let j = 146; j < 176; j += 10) c.fillRect(0, j, 320, 1);
+
+  // lampadaires Mazda « Elan 400 » fermé — caisson trapézoïdal bleu, caches orange, vasque close
+  for (const lx of [20, 296]) {
+    c.fillStyle = '#2858a0';
+    c.beginPath();
+    c.moveTo(lx - 9, 87); c.lineTo(lx + 9, 87);
+    c.lineTo(lx + 6, 92); c.lineTo(lx - 6, 92);
+    c.closePath(); c.fill();                            // caisson trapézoïdal
+    R(c, lx - 9, 87, 3, 2, '#e87820'); R(c, lx + 6, 87, 3, 2, '#e87820'); // caches latéraux
+    R(c, lx - 6, 92, 12, 2, '#f8e8b0');                 // vasque fermée, lampe allumée
+    c.fillStyle = 'rgba(255,230,140,0.25)';
+    c.beginPath(); c.ellipse(lx, 96, 9, 4, 0, 0, 7); c.fill(); // halo
+    R(c, lx - 1, 94, 2, 46, '#2a2832');                 // mât
+    R(c, lx - 3, 138, 6, 3, '#1c1a22');                 // socle
+    c.fillStyle = 'rgba(255,210,90,0.07)';
+    c.beginPath(); c.moveTo(lx, 94); c.lineTo(lx - 14, 140); c.lineTo(lx + 14, 140); c.fill(); // flaque de lumière
+  }
+
   // sortie vers la rue (bord droit)
   R(c, 306, 100, 14, 76, '#1a1822');
   txt(c, '>', 310, 130, '#8a86a0', 8);
